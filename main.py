@@ -14,6 +14,7 @@ parser.add_argument('--patch_size', type=int, default=64, help='size of the each
 parser.add_argument('--image_size', type=int, default=512, help='size of the images in the batch')
 parser.add_argument('--result_path', type=str, default='./results', help='folder to store the images with the outlined '
                                                                          'patches with the highest entropy')
+parser.add_argument('--device', type=str, default='cuda:0', help='options: cpu, cuda:0, cuda:1, ...')
 
 
 args = parser.parse_args()
@@ -23,6 +24,7 @@ if args.image_size % args.patch_size != 0:
     exit()
 
 paths = glob(os.path.join(args.data_path, "*"))
+device= args.device
 
 list_to_tensor = transforms.ToTensor()
 images = []
@@ -35,7 +37,7 @@ for path in paths:
 entropy = Entropy(patch_size=args.patch_size, image_width=args.image_size, image_height=args.image_size)
 
 # tensor with the shape (len(paths) x 3 x h x w)
-images = torch.stack(images)
+images = torch.stack(images).to(device)
 entropy_values = entropy(images)
 
 # outline 10 patches per image with the highest entropy
